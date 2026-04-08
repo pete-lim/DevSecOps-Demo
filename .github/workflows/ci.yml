@@ -2,32 +2,35 @@ name: CI Pipeline
 
 on: [push]
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
-      - name: Install dependencies
-        run: npm install
+        uses: github/codeql-action/analyze@v3
 
       - name: Run npm audit
         run: npm audit --audit-level=high
@@ -39,7 +42,7 @@ jobs:
         run: docker build -t devsecops-demo:latest .
 
       - name: Scan Docker image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.20.0
         with:
           image-ref: 'devsecops-demo:latest'
           exit-code: '1'
